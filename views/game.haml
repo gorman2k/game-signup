@@ -1,0 +1,25 @@
+- if session[:flash]
+  %p= show_flash(:flash)
+
+%script(src="/js/app.js")
+
+%div{:class => "well span10 offset1"}
+  %p<
+    Game:
+    %span{:class => 'dateformat'} #{game.date}
+  %p Players in the game:
+  - @players.each do |player|
+    #{player.firstName} #{player.lastName}
+    %br
+  - if !@waitingListPlayers.empty?
+    %br
+    %p Waiting List:
+    - @waitingListPlayers.each do |player|
+      #{player.firstName} #{player.lastName}
+      %br
+  %form{ :action => "/game/#{params[:id]}", :method => "post" }
+    %input{:type => "hidden", :name => "_method", :value => "put"}
+    %input{:type => "submit", :value => "Sign up to play!", :class => "button"}
+  %form{ :action => "/game/#{params[:id]}", :method => "post" }
+    %input{:type => "hidden", :name => "_method", :value => "delete"}
+    %input{:type => "submit", :value => "Remove me from the game", :class => "button"}

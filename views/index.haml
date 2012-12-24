@@ -1,1 +1,10 @@
-Hello
+- if session[:flash]
+  %p= show_flash(:flash)
+
+%script(src="/js/app.js")
+
+%div{:class => "well span10 offset1"}
+  %p Upcoming Games
+  - @games.each do |game|
+    %a(class='dateformat' href='/game/#{game._id}')#{game.date}
+    %br

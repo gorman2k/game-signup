@@ -1,0 +1,13 @@
+- if session[:flash]
+  %div{:class => "error"} #{show_flash(:flash)}
+
+%div{:class => "container"}
+  %section{:id => "content"}
+    %form{ :action => "/user/authenticate", :method => "post" }
+      %h1 Poker Signup
+      %div
+        %input{:type => "text", :name => "email", :class => "text", :placeholder => "Email address", :id => "email"}
+      %div
+        %input{:type => "submit", :value => "Log in"}
+      %div
+        %a{:href => "/signup"} Register

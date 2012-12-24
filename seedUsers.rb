@@ -7,8 +7,9 @@ users = db.collection('users')
 begin
 	file = File.new("emails.txt", "r")
 	while (line = file.gets)
-		email = "#{line}".chomp
-		new_user = { :email => "#{email}", :created_on => Time.now }
+		# file format is: email#firstName#lastName
+		user = "#{line}".chomp.split('#')
+		new_user = { :email => user[0].downcase, :firstName => user[1], :lastName => user[2], :created_on => Time.now }
 		users.insert(new_user)
 	end
 	file.close
