@@ -1,4 +1,5 @@
 require 'sinatra'
+require 'sinatra/flash'
 require "sinatra/reloader" if development?
 require 'mongo_mapper'
 require 'haml'
@@ -39,12 +40,8 @@ helpers do
     end
   end
 
-  def show_flash(key)
-    if session[key]
-      flash = session[key]
-      session[key] = false
-      flash
-    end
+  def flash_types
+    [:success, :info, :warning, :error]
   end
 end
 
@@ -110,7 +107,7 @@ put "/user/:id" do
     @user.set(:firstName => params[:firstName])
     @user.set(:lastName => params[:lastName])
 
-    session[:flash] = "User details updated"
+    flash[:info] = "User details updated"
     redirect "/"
   else
     haml :login
@@ -131,7 +128,7 @@ get "/game/:id" do
     @waitingListPlayerIds = game.waitingListIds
     @waitingListPlayers = []
     @waitingListPlayerIds.each do |playerId|
-        @waitingListPlayers << User.find(playerId)
+      @waitingListPlayers << User.find(playerId)
     end
     if "#{@user.admin}" == "true"
       adminUser = true
@@ -150,7 +147,7 @@ put "/game/:id" do
 
     # don't allow modifications to games in the past
     if (game.date < Time.now)
-      session[:flash] = "Modifications to past games are not allowed"
+      flash[:error] = "Modifications to past games are not allowed"
     else
 
       # if the game isn't full, add the player
@@ -161,7 +158,7 @@ put "/game/:id" do
         # make sure they're not already in the game
         # otherwise add them to the waiting list
         if (!game.userIds.include? "#{session[:user]}")
-          session[:flash] = "The game is full but you will be added to the waiting list"
+          flash[:info] = "The game is full but you will be added to the waiting list"
           game.push_uniq(:waitingListIds => "#{session[:user]}")
         end
       end
@@ -178,7 +175,7 @@ delete "/game/:id" do
     game = Game.find("#{params[:id]}")
 
     if (game.date < Time.now)
-      session[:flash] = "Modifications to past games are not allowed"
+      flash[:error] = "Modifications to past games are not allowed"
     else
 
       # remove the userid from both the game and wait lists to be safe
@@ -207,10 +204,10 @@ end
 post "/game" do
   if logged_in?
     game = Game.create({
-      :date => Time.parse(params[:gameTime]),
-      :maxPlayers => params[:maxPlayers],
-      :minPlayers => params[:minPlayers]
-    })
+                           :date => Time.parse(params[:gameTime]),
+                           :maxPlayers => params[:maxPlayers],
+                           :minPlayers => params[:minPlayers]
+                       })
 
     game.save
     redirect "/"
@@ -236,7 +233,7 @@ post "/user/authenticate" do
   user = User.first(:email => params[:email])
 
   if !user
-    session[:flash] = "User doesn't exist"
+    flash[:error] = "User doesn't exist"
     redirect "/"
   end
 
@@ -245,21 +242,15 @@ post "/user/authenticate" do
   if user.save
     session[:user] = user.id
   else
-    session[:flash] = "There was an error logging in, please try again"
+    flash[:error] = "There was an error logging in, please try again"
   end
 
   redirect "/"
 end
 
-post "/user/logout" do
-  session[:user] = nil
-  session[:flash] = "You have logged out successfully"
-  redirect "/"
-end
-
 post "/signout" do
   session[:user] = nil
-  session[:flash] = "You have logged out successfully"
+  flash[:success] = "You have logged out successfully"
 end
 
 get "/signup" do

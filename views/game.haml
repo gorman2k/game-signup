@@ -1,9 +1,7 @@
-- if session[:flash]
-  %p= show_flash(:flash)
-
 %script(src="/js/app.js")
 
 %div{:class => "well span10 offset1"}
+  =styled_flash
   %p<
     Game:
     %span{:class => 'dateformat'} #{game.date}
