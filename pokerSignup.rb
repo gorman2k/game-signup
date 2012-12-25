@@ -70,7 +70,9 @@ get "/games" do
       redirect "/user/#{session[:user]}"
     end
 
-    @games = Game.all
+    @upcomingGames = Game.where(:date.gt => Time.now)
+    @pastGames = Game.where(:date.lt => Time.now).sort(:date.desc).limit(5)
+
     haml :index
   else
     haml :login
@@ -131,8 +133,12 @@ get "/game/:id" do
     @waitingListPlayerIds.each do |playerId|
         @waitingListPlayers << User.find(playerId)
     end
-
-    haml :game, :locals => {:game => game}
+    if "#{@user.admin}" == "true"
+      adminUser = true
+      haml :game, :locals => {:game => game, :adminUser => adminUser}
+    else
+      haml :game, :locals => {:game => game}
+    end
   else
     haml :login
   end
@@ -141,14 +147,23 @@ end
 put "/game/:id" do
   if logged_in?
     game = Game.find("#{params[:id]}")
-    if (game.userIds.length < game.maxPlayers)
-      game.push_uniq(:userIds => "#{session[:user]}")
+
+    # don't allow modifications to games in the past
+    if (game.date < Time.now)
+      session[:flash] = "Modifications to past games are not allowed"
     else
 
-      # make sure they're not already in the game
-      if (!game.userIds.include? "#{session[:user]}")
-        session[:flash] = "The game is full but you will be added to the waiting list"
-        game.push_uniq(:waitingListIds => "#{session[:user]}")
+      # if the game isn't full, add the player
+      if (game.userIds.length < game.maxPlayers)
+        game.push_uniq(:userIds => "#{session[:user]}")
+      else
+
+        # make sure they're not already in the game
+        # otherwise add them to the waiting list
+        if (!game.userIds.include? "#{session[:user]}")
+          session[:flash] = "The game is full but you will be added to the waiting list"
+          game.push_uniq(:waitingListIds => "#{session[:user]}")
+        end
       end
     end
 
@@ -162,20 +177,25 @@ delete "/game/:id" do
   if logged_in?
     game = Game.find("#{params[:id]}")
 
-    # remove the userid from both the game and wait lists to be safe
-    game.pull(:waitingListIds => "#{session[:user]}")
-    game.pull(:userIds => "#{session[:user]}")
+    if (game.date < Time.now)
+      session[:flash] = "Modifications to past games are not allowed"
+    else
 
-    # refresh game object
-    game = Game.find("#{params[:id]}")
+      # remove the userid from both the game and wait lists to be safe
+      game.pull(:waitingListIds => "#{session[:user]}")
+      game.pull(:userIds => "#{session[:user]}")
 
-    # see if players on the waiting list need to be added in the game
-    if (game.waitingListIds.any? and (game.userIds.length < game.maxPlayers))
-      ids = game.waitingListIds
-      idToAdd = ids.shift
-      game.waitingListIds = ids
-      game.save!
-      game.push_uniq(:userIds => idToAdd)
+      # refresh game object
+      game = Game.find("#{params[:id]}")
+
+      # see if there's a waiting list so they can be added to the game
+      if (game.waitingListIds.any? and (game.userIds.length < game.maxPlayers))
+        ids = game.waitingListIds
+        idToAdd = ids.shift
+        game.waitingListIds = ids
+        game.save!
+        game.push_uniq(:userIds => idToAdd)
+      end
     end
 
     redirect "/game/#{params[:id]}"

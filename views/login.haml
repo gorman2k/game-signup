@@ -1,8 +1,7 @@
-- if session[:flash]
-  %div{:class => "error"} #{show_flash(:flash)}
-
 %div{:class => "container"}
   %section{:id => "content"}
+    - if session[:flash]
+      %div{:class => "error"} #{show_flash(:flash)}
     %form{ :action => "/user/authenticate", :method => "post" }
       %h1 Poker Signup
       %div

@@ -5,6 +5,11 @@
 
 %div{:class => "well span10 offset1"}
   %p Upcoming Games
-  - @games.each do |game|
+  - @upcomingGames.each do |game|
+    %a(class='dateformat' href='/game/#{game._id}')#{game.date}
+    %br
+  %br
+  %p Past Games
+  - @pastGames.each do |game|
     %a(class='dateformat' href='/game/#{game._id}')#{game.date}
     %br
