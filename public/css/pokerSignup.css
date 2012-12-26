@@ -1,3 +1,14 @@
+p {
+    font-size: 120%;
+}
+
+.hellotext {
+    display: inline-block;
+    margin-top: 5px;
+    padding: 4px 12px;
+    vertical-align: middle;
+}
+
 .info, .success, .warning, .error, .validation {
     border: 1px solid;
     margin: 10px 0px;
@@ -35,7 +46,7 @@
 }
 
 [class^="ico"]:before, [class*=" ico"]:before {
-    margin-right: 5px;
+    margin-right: 8px;
     font-size: 125%;
     font-family: 'IcoMoon';
     font-style: normal;

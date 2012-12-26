@@ -17,17 +17,15 @@
     %div{:class => "navbar"}
       %div{:class => "navbar-inner"}
         %div{:class => "container"}
-          %div
-            %ul{:class => "nav"}
-              %li
-                %a{:href => "/", :class => "icohome"}Home
-              %li
-                %a{:href => "/user", :class => "icouser"}Edit Account
-              %li
-                %a{:href => "/about", :class => "icospades"}About
-          %div{:class => "nav-collapse collapse pull-right"}
-            %ul{:class => "nav"}
-              - if session[:user]
-                Hello, #{@user.firstName} #{@user.lastName}
-                %a{:class => "btn btn-inverse", :id => "signout"}Logout
+          %ul{:class => "nav"}
+            %li
+              %a{:href => "/", :class => "icohome"}Home
+            %li
+              %a{:href => "/user", :class => "icouser"}Edit Account
+            %li
+              %a{:href => "/about", :class => "icospades"}About
+          %ul{:class => "nav pull-right"}
+            - if session[:user]
+              %span{:class => "hellotext"}Hello, #{@user.firstName} #{@user.lastName}
+              %a{:class => "btn btn-inverse", :id => "signout"}Logout
   = yield

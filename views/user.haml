@@ -1,7 +1,7 @@
 %script(src="/js/pokerSignup.js")
 
 %div{:class => "well span10 offset1"}
-  %p Enter your first and last name. This will be displayed to other players in the game.
+  %p Enter your first and last name. This will be displayed to other players in the game when you sign up.
   %p For changes to your email address, please email Barrett.
 
   %form{ :action => "/user/#{@user.id}", :method => "post" }
