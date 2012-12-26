@@ -1,34 +1,32 @@
 require 'sinatra'
 require 'sinatra/flash'
 require "sinatra/reloader" if development?
-require 'mongo_mapper'
+require 'mongoid'
 require 'haml'
 
 enable :sessions
 
 class User
-  include MongoMapper::Document
+  include Mongoid::Document
 
-  key :email, String, :required => true, :unique => true
-  key :firstName, String
-  key :lastName, String
-  key :lastLoginTime, Time
-  key :admin, Boolean
+  field :email, type: String
+  field :firstName, type: String
+  field :lastName, type: String
+  field :lastLoginTime, type: Time
+  field :admin, type: Boolean
 
-  validates_length_of :firstName, :minimum => 2
-  validates_length_of :lastName,  :minimum => 2
+  validates_length_of :firstName, minimum: 2
+  validates_length_of :lastName,  minimum: 2
 end
 
 class Game
-  include MongoMapper::Document
+  include Mongoid::Document
 
-  key :date, Time, :required => true
-  key :maxPlayers, Integer
-  key :minPlayers, Integer
-  key :userIds, Array
-  many :users, :in => :user_ids
-  key :waitingListIds, Array
-  many :users, :in => :waitingList_ids
+  field :date, type: Time
+  field :maxPlayers, type: Integer
+  field :minPlayers, type: Integer
+  field :userIds, type: Array
+  field :waitingListIds, type: Array
 end
 
 #######################################################
@@ -48,33 +46,36 @@ helpers do
 
   def get_errors_for(object)
     allerrors = ""
-    object.errors.each{|attr,msg| allerrors += ("#{attr} #{msg}\n") }
+    object.errors.each{|attr,msg| allerrors += ("#{attr} #{msg}<br>") }
     allerrors
   end
 end
 
 configure do
   Time.zone_default = 'Central Time (US & Canada)'
-
   set :haml, {:format => :html5}
   $stdout.sync = true
-  mongo_uri = "mongodb://localhost"
-  MongoMapper.connection = Mongo::MongoClient.from_uri(mongo_uri)
-  MongoMapper.database = "poker"
+  Mongoid.configure do |config|
+    config.sessions = {
+        :default => {
+            :hosts => ["localhost:27017"], :database => "poker"
+        }
+    }
+    end
 end
 
 #######################################################
 
 get "/games" do
   if logged_in?
-    @user = User.first(:id => session[:user])
+    @user = User.where(id: session[:user]).first
 
     if (@user.firstName.nil? or @user.lastName.nil?)
       redirect "/user/#{session[:user]}"
     end
 
     @upcomingGames = Game.where(:date.gt => Time.now)
-    @pastGames = Game.where(:date.lt => Time.now).sort(:date.desc).limit(10)
+    @pastGames = Game.where(:date.lt => Time.now).desc(:date).limit(10)
 
     haml :index
   else
@@ -92,7 +93,7 @@ end
 
 get "/user/:id" do
   if logged_in?
-    @user = User.first(:id => "#{params[:id]}")
+    @user = User.where(:id => "#{params[:id]}").first
     haml :user
   else
     haml :login
@@ -110,18 +111,22 @@ end
 put "/user/:id" do
   if logged_in?
     @user = User.where(:id => session[:user]).first
-    @user.set(:firstName => params[:firstName])
-    @user.set(:lastName => params[:lastName])
+    @user.firstName = params[:firstName]
+    @user.lastName = params[:lastName]
 
     # only for logging in for the first time without a name set
     if @user.lastLoginTime.nil?
-      @user.set(:lastLoginTime => Time.now)
+      @user.lastLoginTime = Time.now
     end
 
     if @user.save
       flash[:info] = "User details updated"
     else
-      flash[:error] = "Error(s): ", @user.errors.map {|k,v| "#{k}: #{v}"}
+      #errors = ""
+      #@user.errors.full_messages.each do |error_message|
+      #  errors += error_message
+      #end
+      flash[:error] = get_errors_for(@user)
       redirect "/user/#{session[:user]}"
     end
 
@@ -169,14 +174,14 @@ put "/game/:id" do
 
       # if the game isn't full, add the player
       if (game.userIds.length < game.maxPlayers)
-        game.push_uniq(:userIds => "#{session[:user]}")
+        game.add_to_set(:userIds, "#{session[:user]}")
       else
 
         # make sure they're not already in the game
         # otherwise add them to the waiting list
         if (!game.userIds.include? "#{session[:user]}")
           flash[:info] = "The game is full but you will be added to the waiting list"
-          game.push_uniq(:waitingListIds => "#{session[:user]}")
+          game.add_to_set(:waitingListIds, "#{session[:user]}")
         end
       end
     end
@@ -196,8 +201,8 @@ delete "/game/:id" do
     else
 
       # remove the userid from both the game and wait lists to be safe
-      game.pull(:waitingListIds => "#{session[:user]}")
-      game.pull(:userIds => "#{session[:user]}")
+      game.pull(:waitingListIds, "#{session[:user]}")
+      game.pull(:userIds, "#{session[:user]}")
 
       # refresh game object
       game = Game.find("#{params[:id]}")
@@ -207,8 +212,8 @@ delete "/game/:id" do
         ids = game.waitingListIds
         idToAdd = ids.shift
         game.waitingListIds = ids
-        game.save!
-        game.push_uniq(:userIds => idToAdd)
+        game.save
+        game.add_to_set(:userIds, idToAdd)
       end
     end
 
@@ -282,7 +287,7 @@ end
 
 get "/about" do
   if logged_in?
-    @user = User.first(:id => session[:user])
+    @user = User.where(:id => session[:user]).first
     haml :about
   else
     haml :login
