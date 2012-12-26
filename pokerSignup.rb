@@ -9,18 +9,20 @@ enable :sessions
 class User
   include MongoMapper::Document
 
-  key :email, String, :required => true
+  key :email, String, :required => true, :unique => true
   key :firstName, String
   key :lastName, String
   key :lastLoginTime, Time
-  key :currentLoginTime, Time
   key :admin, Boolean
+
+  validates_length_of :firstName, :minimum => 2
+  validates_length_of :lastName,  :minimum => 2
 end
 
 class Game
   include MongoMapper::Document
 
-  key :date, Time
+  key :date, Time, :required => true
   key :maxPlayers, Integer
   key :minPlayers, Integer
   key :userIds, Array
@@ -43,6 +45,12 @@ helpers do
   def flash_types
     [:success, :info, :warning, :error]
   end
+
+  def get_errors_for(object)
+    allerrors = ""
+    object.errors.each{|attr,msg| allerrors += ("#{attr} #{msg}\n") }
+    allerrors
+  end
 end
 
 configure do
@@ -50,8 +58,9 @@ configure do
 
   set :haml, {:format => :html5}
   $stdout.sync = true
-  mongo_uri = "mongodb://localhost/poker" || ENV['MONGOHQ_URL']
+  mongo_uri = "mongodb://localhost"
   MongoMapper.connection = Mongo::MongoClient.from_uri(mongo_uri)
+  MongoMapper.database = "poker"
 end
 
 #######################################################
@@ -65,7 +74,7 @@ get "/games" do
     end
 
     @upcomingGames = Game.where(:date.gt => Time.now)
-    @pastGames = Game.where(:date.lt => Time.now).sort(:date.desc).limit(5)
+    @pastGames = Game.where(:date.lt => Time.now).sort(:date.desc).limit(10)
 
     haml :index
   else
@@ -100,11 +109,22 @@ end
 
 put "/user/:id" do
   if logged_in?
-    @user = User.first(:id => session[:user])
+    @user = User.where(:id => session[:user]).first
     @user.set(:firstName => params[:firstName])
     @user.set(:lastName => params[:lastName])
 
-    flash[:info] = "User details updated"
+    # only for logging in for the first time without a name set
+    if @user.lastLoginTime.nil?
+      @user.set(:lastLoginTime => Time.now)
+    end
+
+    if @user.save
+      flash[:info] = "User details updated"
+    else
+      flash[:error] = "Error(s): ", @user.errors.map {|k,v| "#{k}: #{v}"}
+      redirect "/user/#{session[:user]}"
+    end
+
     redirect "/"
   else
     haml :login
@@ -113,7 +133,7 @@ end
 
 get "/game/:id" do
   if logged_in?
-    @user = User.first(:id => session[:user])
+    @user = User.where(:id => session[:user]).first
     game = Game.find("#{params[:id]}")
 
     @playerIds = game.userIds
@@ -215,7 +235,7 @@ end
 
 get "/admin" do
   if logged_in?
-    @user = User.first(:id => session[:user])
+    @user = User.where(:id => session[:user]).first
     if "#{@user.admin}" == "true"
       haml :admin
     else
@@ -227,17 +247,23 @@ get "/admin" do
 end
 
 post "/user/authenticate" do
-  user = User.first(:email => params[:email])
+  @user = User.where(:email => params[:email]).first
 
-  if !user
+  if @user.nil?
     flash[:error] = "User doesn't exist"
     redirect "/"
   end
 
-  user.lastLoginTime = user.currentLoginTime
-  user.currentLoginTime = Time.now
-  if user.save
-    session[:user] = user.id
+  # first time logging in and the names are not populated in the DB
+  # let them log in but redirect them to edit account
+  if @user.lastLoginTime.nil? and (@user.firstName.nil? or @user.lastName.nil?)
+    session[:user] = @user.id
+    redirect "/user/#{session[:user]}"
+  end
+
+  @user.lastLoginTime = Time.now
+  if @user.save
+    session[:user] = @user.id
   else
     flash[:error] = "There was an error logging in, please try again"
   end

@@ -16,6 +16,7 @@
   %body
     %div{:class => "navbar"}
       %div{:class => "navbar-inner"}
+        %a{:class => "brand", :href => "#"}Poker Signup
         %div{:class => "container"}
           %ul{:class => "nav"}
             %li
@@ -26,6 +27,7 @@
               %a{:href => "/about", :class => "icospades"}About
           %ul{:class => "nav pull-right"}
             - if session[:user]
-              %span{:class => "hellotext"}Hello, #{@user.firstName} #{@user.lastName}
+              - if !"#{@user.firstName}".empty? and !"#{@user.lastName}".empty?
+                %span{:class => "hellotext"}Hello, #{@user.firstName} #{@user.lastName}
               %a{:class => "btn btn-inverse", :id => "signout"}Logout
   = yield

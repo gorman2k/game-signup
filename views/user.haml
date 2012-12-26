@@ -1,12 +1,12 @@
 %script(src="/js/pokerSignup.js")
 
 %div{:class => "well span10 offset1"}
-  %p Enter your first and last name. This will be displayed to other players in the game when you sign up.
-  %p For changes to your email address, please email Barrett.
+  =styled_flash
+  %p Enter your first and last name. This will be displayed to other players when you sign up for a game. For a change to your email address, please email Barrett.
 
   %form{ :action => "/user/#{@user.id}", :method => "post" }
     %input{:type => "hidden", :name => "_method", :value => "put"}
-    %input{:type => "text", :value => "First Name", :name => "firstName", :onblur => "if (this.value == '') {this.value = 'First Name';}",  :onfocus => "if (this.value == 'First Name') {this.value = '';}"}
-    %input{:type => "text", :value => "Last Name", :name => "lastName", :onblur => "if (this.value == '') {this.value = 'Last Name';}",  :onfocus => "if (this.value == 'Last Name') {this.value = '';}"}
+    %input{:type => "text", :name => "firstName"}
+    %input{:type => "text", :name => "lastName"}
     %br
     %input{:type => "submit", :value => "Submit", :class => "btn btn-primary"}

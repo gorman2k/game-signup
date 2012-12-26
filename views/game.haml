@@ -5,14 +5,14 @@
   %h3<
     Game:
     %span{:class => 'dateformat'} #{game.date}
-  %h5 Players in the game:
+  %p Players in the game:
   - if !@players.any?
-    %p No players so far!
+    %strong No players so far!
   %ol
     - @players.each do |player|
       %li #{player.firstName} #{player.lastName}
   - if !@waitingListPlayers.empty?
-    %h5 Waiting List:
+    %p Waiting List:
     %ol
       - @waitingListPlayers.each do |player|
         %li #{player.firstName} #{player.lastName}

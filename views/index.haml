@@ -4,11 +4,10 @@
   =styled_flash
   %h3 Upcoming Games
   - if !@upcomingGames.any?
-    %h4 No games scheduled at the moment!
+    %strong No games scheduled at the moment!
   - @upcomingGames.each do |game|
     %a(class='dateformat' href='/game/#{game._id}')#{game.date}
     %br
-  %br
   %h3 Past Games
   - @pastGames.each do |game|
     %a(class='dateformat' href='/game/#{game._id}')#{game.date}
