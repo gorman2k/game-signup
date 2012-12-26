@@ -1,11 +1,13 @@
-%div{:class => "container"}
-  %section{:id => "content"}
-    =styled_flash
-    %form{ :action => "/user/authenticate", :method => "post" }
-      %h1 Poker Signup
-      %div
-        %input{:type => "text", :name => "email", :class => "text", :placeholder => "Email address", :id => "email"}
-      %div
-        %input{:type => "submit", :value => "Log in"}
-      %div
-        %a{:href => "/signup"} Register
+%div{:class => "well span10 offset1"}
+  =styled_flash
+  %form{:action => "/user/authenticate", :method => "post", :class => "form-horizontal"}
+    %fieldset
+      %div{:id => "legend"}
+        %legend{:class => ""}Login
+      %div{:class => "control-group"}
+        %label{:class => "control-label", :for => "email"}Email address
+        %div{:class => "controls"}
+          %input{:type => "text", :id => "username", :name => "email", :placeholder => "", :class => "input-xlarge"}
+      %div{:class => "control-group"}
+        %div{:class => "controls"}
+          %button{:class => "btn btn-success"}Login

@@ -1,14 +1,15 @@
-%script(src="/js/app.js")
+%script(src="/js/pokerSignup.js")
 
-%h2 Admin
-%form{ :action => "/game", :method => "post" }
-  %input{:type => "hidden", :name => "_method", :value => "post"}
-  %input{:type => "text", :value => "Max Players", :name => "maxPlayers", :onblur => "if (this.value == '') {this.value = 'Max Players';}",  :onfocus => "if (this.value == 'Max Players') {this.value = '10';}"}
-  %br
-  %input{:type => "text", :value => "Min Players", :name => "minPlayers", :onblur => "if (this.value == '') {this.value = 'Min Players';}",  :onfocus => "if (this.value == 'Min Players') {this.value = '6';}"}
-  %br
-  %br
-  %input{:type => "text", :id => "datepicker", :name => "gameTime"}
-  %br
-  %br
-  %input{:type => "submit", :value => "Create Game", :class => "button"}
+%div{:class => "well span10 offset1"}
+  %h2 Admin
+  %form{ :action => "/game", :method => "post" }
+    %input{:type => "hidden", :name => "_method", :value => "post"}
+    %input{:type => "text", :value => "Max Players", :name => "maxPlayers", :onblur => "if (this.value == '') {this.value = 'Max Players';}",  :onfocus => "if (this.value == 'Max Players') {this.value = '10';}"}
+    %br
+    %input{:type => "text", :value => "Min Players", :name => "minPlayers", :onblur => "if (this.value == '') {this.value = 'Min Players';}",  :onfocus => "if (this.value == 'Min Players') {this.value = '6';}"}
+    %br
+    %br
+    %input{:type => "text", :id => "datepicker", :name => "gameTime"}
+    %br
+    %br
+    %input{:type => "submit", :value => "Create Game", :class => "button"}

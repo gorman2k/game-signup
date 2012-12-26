@@ -1,13 +1,15 @@
-%script(src="/js/app.js")
+%script(src="/js/pokerSignup.js")
 
 %div{:class => "well span10 offset1"}
   =styled_flash
-  %p Upcoming Games
+  %h3 Upcoming Games
+  - if !@upcomingGames.any?
+    %h4 No games scheduled at the moment!
   - @upcomingGames.each do |game|
     %a(class='dateformat' href='/game/#{game._id}')#{game.date}
     %br
   %br
-  %p Past Games
+  %h3 Past Games
   - @pastGames.each do |game|
     %a(class='dateformat' href='/game/#{game._id}')#{game.date}
     %br

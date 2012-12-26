@@ -1,4 +1,4 @@
-%script(src="/js/app.js")
+%script(src="/js/pokerSignup.js")
 
 %div{:class => "well span10 offset1"}
   %p Enter your first and last name. This will be displayed to other players in the game.
@@ -9,4 +9,4 @@
     %input{:type => "text", :value => "First Name", :name => "firstName", :onblur => "if (this.value == '') {this.value = 'First Name';}",  :onfocus => "if (this.value == 'First Name') {this.value = '';}"}
     %input{:type => "text", :value => "Last Name", :name => "lastName", :onblur => "if (this.value == '') {this.value = 'Last Name';}",  :onfocus => "if (this.value == 'Last Name') {this.value = '';}"}
     %br
-    %input{:type => "submit", :value => "Submit", :class => "button"}
+    %input{:type => "submit", :value => "Submit", :class => "btn btn-primary"}

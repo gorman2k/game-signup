@@ -1,26 +1,28 @@
-%script(src="/js/app.js")
+%script(src="/js/pokerSignup.js")
 
 %div{:class => "well span10 offset1"}
   =styled_flash
-  %p<
+  %h3<
     Game:
     %span{:class => 'dateformat'} #{game.date}
-  %p Players in the game:
-  - @players.each do |player|
-    #{player.firstName} #{player.lastName}
-    %br
+  %h5 Players in the game:
+  - if !@players.any?
+    %p No players so far!
+  %ol
+    - @players.each do |player|
+      %li #{player.firstName} #{player.lastName}
   - if !@waitingListPlayers.empty?
-    %br
-    %p Waiting List:
-    - @waitingListPlayers.each do |player|
-      #{player.firstName} #{player.lastName}
-      %br
+    %h5 Waiting List:
+    %ol
+      - @waitingListPlayers.each do |player|
+        %li #{player.firstName} #{player.lastName}
+  %br
   %form{ :action => "/game/#{params[:id]}", :method => "post" }
     %input{:type => "hidden", :name => "_method", :value => "put"}
-    %input{:type => "submit", :value => "Sign up to play!", :class => "button"}
+    %input{:type => "submit", :value => "Sign up to play!", :class => "btn btn-primary"}
   %form{ :action => "/game/#{params[:id]}", :method => "post" }
     %input{:type => "hidden", :name => "_method", :value => "delete"}
-    %input{:type => "submit", :value => "Remove me from the game", :class => "button"}
+    %input{:type => "submit", :value => "Remove me from the game", :class => "btn btn-primary"}
   - if defined? adminUser
     - @players.concat @waitingListPlayers
     - @players.each_with_index do |player, index|
