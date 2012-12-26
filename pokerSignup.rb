@@ -50,11 +50,8 @@ configure do
 
   set :haml, {:format => :html5}
   $stdout.sync = true
-  #mongo_uri = ENV['connectionString']
-  mongo_uri = "mongodb://localhost"
+  mongo_uri = "mongodb://localhost/poker" || ENV['MONGOHQ_URL']
   MongoMapper.connection = Mongo::MongoClient.from_uri(mongo_uri)
-  #MongoMapper.database = ENV['databaseName']
-  MongoMapper.database = "poker"
 end
 
 #######################################################
