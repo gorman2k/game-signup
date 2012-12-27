@@ -21,3 +21,10 @@
           %b{:class => 'dateformat'}#{date}
           - gameEmailHash[date].each do |email|
             #{email},
+
+    %h3 Last Login Times
+    %ul
+      - lastUsers.each do |user|
+        %li
+          %b{:class => 'dateformat'}#{user.lastLoginTime}<
+          #{user.email}

@@ -247,6 +247,7 @@ get "/admin" do
     @user = User.where(:id => session[:user]).first
     @upcomingGames = Game.where(:date.gt => Time.now)
 
+    # populate email addresses for upcoming games
     gameEmailHash = Hash.new
     @upcomingGames.each do |game|
       emails = Array.new
@@ -270,7 +271,11 @@ get "/admin" do
       gameEmailHash[game.date] = emails
     end
 
-    haml :admin, :locals => {:gameEmailHash => gameEmailHash}
+    # last few logins
+    lastUsers = User.desc(:lastLoginTime).limit(10)
+    puts lastUsers
+
+    haml :admin, :locals => {:gameEmailHash => gameEmailHash, :lastUsers => lastUsers}
   else
     haml :login
   end
