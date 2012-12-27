@@ -3,6 +3,9 @@ require 'sinatra/flash'
 require "sinatra/reloader" if development?
 require 'mongoid'
 require 'haml'
+configure :production do
+  require 'newrelic_rpm'
+end
 
 enable :sessions
 Mongoid.load!("config/mongoid.yml")
