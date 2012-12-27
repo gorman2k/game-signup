@@ -22,11 +22,4 @@
     %input{:type => "submit", :value => "Sign up to play!", :class => "btn btn-primary"}
   %form{ :action => "/game/#{params[:id]}", :method => "post" }
     %input{:type => "hidden", :name => "_method", :value => "delete"}
-    %input{:type => "submit", :value => "Remove me from the game", :class => "btn btn-primary"}
-  - if defined? adminUser
-    - @players.concat @waitingListPlayers
-    - @players.each_with_index do |player, index|
-      - if index == @players.size - 1
-        #{player.email}
-      - else
-        #{player.email},
+    %input{:type => "submit", :value => "Remove me from the game", :class => "btn btn-danger"}

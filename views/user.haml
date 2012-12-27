@@ -3,10 +3,16 @@
 %div{:class => "well span10 offset1"}
   =styled_flash
   %p Enter your first and last name. This will be displayed to other players when you sign up for a game. For a change to your email address, please email Barrett.
-
-  %form{ :action => "/user/#{@user.id}", :method => "post" }
+  %form{:class => "form-horizontal", :action => "/user/#{@user.id}", :method => "post"}
     %input{:type => "hidden", :name => "_method", :value => "put"}
-    %input{:type => "text", :name => "firstName"}
-    %input{:type => "text", :name => "lastName"}
-    %br
-    %input{:type => "submit", :value => "Submit", :class => "btn btn-primary"}
+    %div{:class => "control-group"}
+      %label{:class => "control-label", :for => "firstName"}First Name
+      %div{:class => "controls"}
+        %input{:type => "text", :name => "firstName", :placeholder => "First Name"}
+      %br
+      %label{:class => "control-label", :for => "lastName"}Last Name
+      %div{:class => "controls"}
+        %input{:type => "text", :name => "lastName", :placeholder => "Last Name"}
+    %div{:class => "control-group"}
+      %div{:class => "controls"}
+        %button{:type => "submit", :class => "btn"}Submit

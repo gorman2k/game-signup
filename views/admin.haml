@@ -13,3 +13,11 @@
     %br
     %br
     %input{:type => "submit", :value => "Create Game", :class => "button"}
+
+    %h3 Upcoming Games
+    %ul
+      - gameEmailHash.keys.each do |date|
+        %li
+          %b{:class => 'dateformat'}#{date}
+          - gameEmailHash[date].each do |email|
+            #{email},
