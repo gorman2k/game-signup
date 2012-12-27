@@ -277,7 +277,7 @@ get "/admin" do
 end
 
 post "/user/authenticate" do
-  @user = User.where(:email => params[:email]).first
+  @user = User.where(:email => params[:email].downcase).first
 
   if @user.nil?
     flash[:error] = "User doesn't exist"
