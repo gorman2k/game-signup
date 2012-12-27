@@ -48,6 +48,18 @@ helpers do
     object.errors.each{|attr,msg| allerrors += ("#{attr} #{msg}<br>") }
     allerrors
   end
+
+  def protected!
+    unless authorized?
+      response['WWW-Authenticate'] = %(Basic realm="Restricted Area")
+      throw(:halt, [401, "Not authorized\n"])
+    end
+  end
+
+  def authorized?
+    @auth ||=  Rack::Auth::Basic::Request.new(request.env)
+    @auth.provided? && @auth.basic? && @auth.credentials && @auth.credentials == ['admin', 'admin']
+  end
 end
 
 configure do
@@ -233,6 +245,8 @@ end
 
 get "/admin" do
   if logged_in?
+    protected!
+
     @user = User.where(:id => session[:user]).first
     @upcomingGames = Game.where(:date.gt => Time.now)
 

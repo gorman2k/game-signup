@@ -2,7 +2,8 @@
 
 %div{:class => "well span10 offset1"}
   =styled_flash
-  %p Enter your first and last name. This will be displayed to other players when you sign up for a game. For a change to your email address, please email Barrett.
+  %p Enter your first and last name. This will be displayed to other players when you sign up for a game. For a change to your email address, please email &#98;&#97;&#114;&#114;&#101;&#116;&#116;&#64;&#99;&#101;&#114;&#118;&#101;&#110;&#107;&#97;&#46;&#99;&#111;&#109;.
+  %p If this is your first time logging into the system, you must enter a name to proceed.
   %form{:class => "form-horizontal", :action => "/user/#{@user.id}", :method => "post"}
     %input{:type => "hidden", :name => "_method", :value => "put"}
     %div{:class => "control-group"}
