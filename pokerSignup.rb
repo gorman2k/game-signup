@@ -5,6 +5,7 @@ require 'mongoid'
 require 'haml'
 
 enable :sessions
+Mongoid.load!("config/mongoid.yml")
 
 class User
   include Mongoid::Document
@@ -66,13 +67,6 @@ configure do
   Time.zone_default = 'Central Time (US & Canada)'
   set :haml, {:format => :html5}
   $stdout.sync = true
-  Mongoid.configure do |config|
-    config.sessions = {
-        :default => {
-            :hosts => ["localhost:27017"], :database => "poker"
-        }
-    }
-    end
 end
 
 #######################################################
