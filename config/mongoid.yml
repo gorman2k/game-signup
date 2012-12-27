@@ -1,10 +1,3 @@
-defaults: &defaults  
-    host: <%= ENV['MONGOID_HOST'] %>
-    port: <%= ENV['MONGOID_PORT'] %>
-    username: <%= ENV['MONGOID_USER'] %>
-    password: <%= ENV['MONGOID_PASS'] %>
-    database: <%= ENV['MONGOID_DATABASE'] %>
-
 development:
   sessions:
     default:
@@ -12,8 +5,7 @@ development:
         - localhost:27017
       database: poker
 
-test:  
-    <<: *defaults
-        
-production:  
-    <<: *defaults
+production:
+  sessions:
+    default:
+      uri: <%= ENV['MONGOHQ_URL'] %>
