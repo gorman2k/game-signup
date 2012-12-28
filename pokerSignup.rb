@@ -273,7 +273,6 @@ get "/admin" do
 
     # last few logins
     lastUsers = User.desc(:lastLoginTime).limit(10)
-    puts lastUsers
 
     haml :admin, :locals => {:gameEmailHash => gameEmailHash, :lastUsers => lastUsers}
   else
