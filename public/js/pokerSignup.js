@@ -1,4 +1,4 @@
-(function ($) {
+$(document).ready(function(){
     $('#signout').bind('click', function () {
         var signout = $.ajax({
             url:'/signout',
@@ -9,7 +9,7 @@
             window.location = '/'
         });
     })
-})(jQuery);
+});
 
 
 $(function(){
