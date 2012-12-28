@@ -1,5 +1,5 @@
 $(document).ready(function(){
-    $('#signout').bind('submit', function () {
+    $('#signout').bind('click', function () {
         var signout = $.ajax({
             url:'/signout',
             type:'post'
