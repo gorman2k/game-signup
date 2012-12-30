@@ -28,8 +28,8 @@ class Game
   field :date, type: Time
   field :maxPlayers, type: Integer
   field :minPlayers, type: Integer
-  field :userIds, type: Array
-  field :waitingListIds, type: Array
+  field :playerIds, type: Hash, default: Hash.new
+  field :waitingListIds, type: Hash, default: Hash.new
 end
 
 #######################################################
@@ -82,7 +82,7 @@ get "/games" do
       redirect "/user/#{session[:user]}"
     end
 
-    @upcomingGames = Game.where(:date.gt => Time.now)
+    @upcomingGames = Game.where(:date.gt => Time.now).desc(:date)
     @pastGames = Game.where(:date.lt => Time.now).desc(:date).limit(10)
 
     haml :index
@@ -143,25 +143,21 @@ end
 get "/game/:id" do
   if logged_in?
     @user = User.where(:id => session[:user]).first
-    game = Game.find("#{params[:id]}")
+    @game = Game.find("#{params[:id]}")
 
-    @playerIds = game.userIds
-    @players = []
-    if !@playerIds.nil?
-      @playerIds.each do |playerId|
-        @players << User.find(playerId)
-      end
+    @players = Hash.new
+    @game.playerIds.each do |playerId, signupTime|
+      @players[User.find(playerId)] = signupTime
     end
+    @players = @players.sort_by { |player, signupTime| signupTime }
 
-    @waitingListPlayerIds = game.waitingListIds
-    @waitingListPlayers = []
-    if !@waitingListPlayerIds.nil?
-      @waitingListPlayerIds.each do |playerId|
-        @waitingListPlayers << User.find(playerId)
-      end
+    @waitingListPlayers = Hash.new
+    @game.waitingListIds.each do |playerId, signupTime|
+      @waitingListPlayers[User.find(playerId)] = signupTime
     end
+    @waitingListPlayers = @waitingListPlayers.sort_by { |player, signupTime| signupTime }
 
-    haml :game, :locals => {:game => game}
+    haml :game
   else
     haml :login
   end
@@ -175,16 +171,19 @@ put "/game/:id" do
     if game.date < Time.now
       flash[:error] = "Modifications to past games are not allowed"
     else
+
       # if the game isn't full, add the player
-      if game.userIds.nil? or (game.userIds.length < game.maxPlayers)
-        game.add_to_set(:userIds, "#{session[:user]}")
+      if game.playerIds.length < game.maxPlayers and !game.playerIds.keys.include? "#{session[:user]}"
+        game.set("playerIds.#{session[:user]}", Time.now)
       end
+
+      game = Game.find("#{params[:id]}")
 
       # make sure they're not already in the game
       # otherwise add them to the waiting list
-      if (!game.userIds.include? "#{session[:user]}")
+      if !game.playerIds.keys.include? "#{session[:user]}"
         flash[:info] = "The game is full but you will be added to the waiting list"
-        game.add_to_set(:waitingListIds, "#{session[:user]}")
+        game.set("waitingListIds.#{session[:user]}", Time.now)
       end
     end
 
@@ -203,19 +202,22 @@ delete "/game/:id" do
     else
 
       # remove the userid from both the game and wait lists to be safe
-      game.pull(:waitingListIds, "#{session[:user]}")
-      game.pull(:userIds, "#{session[:user]}")
+      game.unset("waitingListIds.#{session[:user]}")
+      game.unset("playerIds.#{session[:user]}")
 
       # refresh game object
       game = Game.find("#{params[:id]}")
 
       # see if there's a waiting list so they can be added to the game
-      if !game.waitingListIds.nil? and (game.userIds.length < game.maxPlayers)
-        ids = game.waitingListIds
-        idToAdd = ids.shift
-        game.waitingListIds = ids
-        game.save
-        game.add_to_set(:userIds, idToAdd)
+      if !game.waitingListIds.empty? and (game.playerIds.length < game.maxPlayers)
+        waitingListIds = game.waitingListIds.sort_by { |player, signupTime| signupTime }
+        idToAddToGame, signupTime = waitingListIds.first
+
+        # remove from waiting list
+        game.unset("waitingListIds.#{idToAddToGame}")
+
+        # add to player list
+        game.set("playerIds.#{idToAddToGame}", signupTime)
       end
     end
 
@@ -245,36 +247,30 @@ get "/admin" do
     protected!
 
     @user = User.where(:id => session[:user]).first
-    @upcomingGames = Game.where(:date.gt => Time.now)
+    upcomingGames = Game.where(:date.gt => Time.now)
 
     # populate email addresses for upcoming games
-    gameEmailHash = Hash.new
-    @upcomingGames.each do |game|
+    @gameEmailHash = Hash.new
+    upcomingGames.each do |game|
       emails = Array.new
 
-      @playerIds = game.userIds
-      if !@playerIds.nil?
-        @playerIds.each do |playerId|
-          player = User.find(playerId)
-          emails.push(player.email)
-        end
+      game.playerIds.each do |playerId, signupTime|
+        player = User.find(playerId)
+        emails.push(player.email)
       end
 
-      @waitingListPlayerIds = game.waitingListIds
-      if !@waitingListPlayerIds.nil?
-        @waitingListPlayerIds.each do |playerId|
-          player = User.find(playerId)
-          emails.push(player.email)
-        end
+      game.waitingListIds.each do |playerId, signupTime|
+        player = User.find(playerId)
+        emails.push(player.email)
       end
 
-      gameEmailHash[game.date] = emails
+      @gameEmailHash[game.date] = emails
     end
 
     # last few logins
-    lastUsers = User.desc(:lastLoginTime).limit(10)
+    @lastUsers = User.desc(:lastLoginTime).limit(10)
 
-    haml :admin, :locals => {:gameEmailHash => gameEmailHash, :lastUsers => lastUsers}
+    haml :admin
   else
     haml :login
   end

@@ -14,15 +14,15 @@
 
     %h3 Upcoming Games
     %ul
-      - gameEmailHash.keys.each do |date|
+      - @gameEmailHash.keys.each do |date|
         %li
-          %b{:class => 'dateformat'}#{date}
-          - gameEmailHash[date].each do |email|
+          %b #{date.strftime("%A, %B %e %Y, %l:%M %p")}
+          - @gameEmailHash[date].each do |email|
             #{email},
 
     %h3 Last Login Times
     %ul
-      - lastUsers.each do |user|
+      - @lastUsers.each do |user|
         %li
-          %b{:class => 'dateformat'}#{user.lastLoginTime}<
+          %b #{user.lastLoginTime.strftime("%A, %B %e %Y, %l:%M %p")}
           #{user.email}

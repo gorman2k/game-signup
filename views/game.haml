@@ -1,19 +1,23 @@
 %div{:class => "well span10 offset1"}
   =styled_flash
-  %h3<
-    Game:
-    %span{:class => 'dateformat'} #{game.date}
+  %h3 Game: #{@game.date.localtime.strftime("%A, %B %e %Y, %l:%M %p")}
   %p Players in the game:
   - if !@players.any?
     %strong No players so far!
   %ol
-    - @players.each do |player|
-      %li #{player.firstName} #{player.lastName}
+    - @players.each do |player, signupTime|
+      %li<
+        #{player.firstName} #{player.lastName}
+        %small
+          %i (#{signupTime.localtime.strftime("%b %e %Y, %l:%M.%S %p")})
   - if !@waitingListPlayers.empty?
     %p Waiting List:
     %ol
-      - @waitingListPlayers.each do |player|
-        %li #{player.firstName} #{player.lastName}
+      - @waitingListPlayers.each do |player, signupTime|
+        %li<
+          #{player.firstName} #{player.lastName}
+          %small
+            %i (#{signupTime.localtime.strftime("%b %e %Y, %l:%M.%S %p")})
   %br
   %form{ :action => "/game/#{params[:id]}", :method => "post" }
     %input{:type => "hidden", :name => "_method", :value => "put"}
