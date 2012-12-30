@@ -24,7 +24,7 @@
     %ul
       - @lastUsers.each do |user|
         %li
-          - if "#{user.lastLoginTime}".nil?
+          - if "#{user.lastLoginTime}".empty?
             %small Never logged in
           - else
             %b #{user.lastLoginTime.strftime("%A, %B %e %Y, %l:%M %p")}
