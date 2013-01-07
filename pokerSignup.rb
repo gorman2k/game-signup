@@ -98,6 +98,7 @@ end
 configure do
   Time.zone_default = 'Central Time (US & Canada)'
   set :haml, {:format => :html5}
+  set :session_secret, ENV['SESSION_SECRET'] ||= 'super secret passphrase'
 end
 
 before do
