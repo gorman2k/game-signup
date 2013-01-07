@@ -1,0 +1,9 @@
+- if !@players.any?
+  %strong No players so far!
+- else
+  %ol
+    - @players.each do |player, signupTime|
+      %li<
+        #{player.firstName} #{player.lastName}
+        %small
+          %i (#{signupTime.localtime.strftime("%b %e %Y, %l:%M.%S %p")})

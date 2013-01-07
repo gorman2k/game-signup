@@ -1,0 +1,8 @@
+- if !@waitingListPlayers.empty?
+  %p Waiting List:
+  %ol
+    - @waitingListPlayers.each do |player, signupTime|
+      %li<
+        #{player.firstName} #{player.lastName}
+        %small
+          %i (#{signupTime.localtime.strftime("%b %e %Y, %l:%M.%S %p")})

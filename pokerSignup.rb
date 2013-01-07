@@ -43,10 +43,6 @@ helpers do
     end
   end
 
-  def flash_types
-    [:success, :info, :warning, :error]
-  end
-
   def get_errors_for(object)
     allerrors = ""
     object.errors.each{|attr,msg| allerrors += ("#{attr} #{msg}<br>") }
@@ -64,12 +60,53 @@ helpers do
     @auth ||=  Rack::Auth::Basic::Request.new(request.env)
     @auth.provided? && @auth.basic? && @auth.credentials && @auth.credentials == [ENV['adminUser'], ENV['adminPassword']]
   end
+
+  def get_player_list(id)
+    @game = Game.find(id)
+
+    @players = Hash.new
+    @game.playerIds.each do |playerId, signupTime|
+      @players[User.find(playerId)] = signupTime
+    end
+    @players = @players.sort_by { |player, signupTime| signupTime }
+    return @players
+  end
+
+  def get_waiting_list(id)
+    @game = Game.find(id)
+
+    @waitingListPlayers = Hash.new
+    @game.waitingListIds.each do |playerId, signupTime|
+      @waitingListPlayers[User.find(playerId)] = signupTime
+    end
+    @waitingListPlayers = @waitingListPlayers.sort_by { |player, signupTime| signupTime }
+  end
+
+  def flash_message
+    [:error, :info, :success].each do |type|
+      return flash[type] unless flash[type].blank?
+    end
+  end
+
+  def flash_type
+    [:error, :info, :success].each do |type|
+      return type unless flash[type].blank?
+    end
+  end
 end
 
 configure do
   Time.zone_default = 'Central Time (US & Canada)'
   set :haml, {:format => :html5}
-  $stdout.sync = true
+end
+
+before do
+  return unless request.xhr?
+  response.headers['X-Message'] = flash[:info]  unless flash[:info].blank?
+  response.headers['X-Message'] = flash[:success]  unless flash[:success].blank?
+  response.headers['X-Message'] = flash[:error]  unless flash[:error].blank?
+  response.headers['X-Message-Type'] = flash_type.to_s
+  flash.discard
 end
 
 #######################################################
@@ -134,28 +171,32 @@ put "/user/:id" do
       redirect "/user/#{session[:user]}"
     end
 
-    redirect "/"
+    redirect "/user/#{params[:id]}"
   else
     haml :login
+  end
+end
+
+get "/game/:id/playerList" do
+  if logged_in?
+    get_player_list("#{params[:id]}")
+    haml :playerList, :layout => false
+  end
+end
+
+get "/game/:id/waitingList" do
+  if logged_in?
+    get_waiting_list("#{params[:id]}")
+    haml :waitingList, :layout => false
   end
 end
 
 get "/game/:id" do
   if logged_in?
     @user = User.where(:id => session[:user]).first
-    @game = Game.find("#{params[:id]}")
 
-    @players = Hash.new
-    @game.playerIds.each do |playerId, signupTime|
-      @players[User.find(playerId)] = signupTime
-    end
-    @players = @players.sort_by { |player, signupTime| signupTime }
-
-    @waitingListPlayers = Hash.new
-    @game.waitingListIds.each do |playerId, signupTime|
-      @waitingListPlayers[User.find(playerId)] = signupTime
-    end
-    @waitingListPlayers = @waitingListPlayers.sort_by { |player, signupTime| signupTime }
+    get_player_list("#{params[:id]}")
+    get_waiting_list("#{params[:id]}")
 
     haml :game
   else
@@ -181,13 +222,11 @@ put "/game/:id" do
 
       # make sure they're not already in the game
       # otherwise add them to the waiting list
-      if !game.playerIds.keys.include? "#{session[:user]}"
-        flash[:info] = "The game is full but you will be added to the waiting list"
+      if !game.playerIds.keys.include? "#{session[:user]}" and !game.waitingListIds.keys.include? "#{session[:user]}"
         game.set("waitingListIds.#{session[:user]}", Time.now)
+        flash[:info] = "The game is full but you will be added to the waiting list"
       end
     end
-
-    redirect "/game/#{params[:id]}"
   else
     haml :login
   end
@@ -221,7 +260,6 @@ delete "/game/:id" do
       end
     end
 
-    redirect "/game/#{params[:id]}"
   else
     haml :login
   end

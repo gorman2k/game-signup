@@ -1,27 +1,14 @@
 %div{:class => "well span10 offset1"}
-  =styled_flash
-  %h3 Game: #{@game.date.localtime.strftime("%A, %B %e %Y, %l:%M %p")}
+  %div{:id => "flash-message"}
+    =styled_flash
+  %h3 Game: #{@game.date.localtime.strftime("%A, %B %e, %Y, %l:%M %p")}
   %p Players in the game:
-  - if !@players.any?
-    %strong No players so far!
-  %ol
-    - @players.each do |player, signupTime|
-      %li<
-        #{player.firstName} #{player.lastName}
-        %small
-          %i (#{signupTime.localtime.strftime("%b %e %Y, %l:%M.%S %p")})
-  - if !@waitingListPlayers.empty?
-    %p Waiting List:
-    %ol
-      - @waitingListPlayers.each do |player, signupTime|
-        %li<
-          #{player.firstName} #{player.lastName}
-          %small
-            %i (#{signupTime.localtime.strftime("%b %e %Y, %l:%M.%S %p")})
+  %div{:id => "playerList"}
+    = haml :playerList
+  %div{:id => "waitingList"}
+    = haml :waitingList
   %br
-  %form{ :action => "/game/#{params[:id]}", :method => "post" }
-    %input{:type => "hidden", :name => "_method", :value => "put"}
-    %input{:type => "submit", :value => "Sign up to play!", :class => "btn btn-primary"}
-  %form{ :action => "/game/#{params[:id]}", :method => "post" }
-    %input{:type => "hidden", :name => "_method", :value => "delete"}
-    %input{:type => "submit", :value => "Remove me from the game", :class => "btn btn-danger"}
+  %a{:class => "btn btn-primary btn-large", :id => "signup", :link => "/game/#{params[:id]}"}Sign up to play!
+  %br
+  %br
+  %a{:class => "btn btn-danger", :id => "remove", :link => "/game/#{params[:id]}"}Remove me from the game
