@@ -340,7 +340,7 @@ post "/user/authenticate" do
 end
 
 post "/signout" do
-  session[:user] = nil
+  session.clear
   flash[:success] = "You have logged out successfully"
 end
 
