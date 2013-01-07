@@ -7,7 +7,6 @@ configure :production do
   require 'newrelic_rpm'
 end
 
-enable :sessions
 Mongoid.load!("config/mongoid.yml")
 
 class User
@@ -98,7 +97,10 @@ end
 configure do
   Time.zone_default = 'Central Time (US & Canada)'
   set :haml, {:format => :html5}
-  set :session_secret, ENV['SESSION_SECRET'] ||= 'super secret passphrase'
+  use Rack::Session::Cookie, :key => 'rack.session',
+      :path => '/',
+      :expire_after => 2592000, # In seconds
+      :secret => ENV['SESSION_SECRET'] ||= 'super secret passphrase'
 end
 
 before do
