@@ -345,7 +345,6 @@ end
 
 post "/signout" do
   session.clear
-  puts "** in signout: " + session[:user]
   flash[:success] = "You have logged out successfully"
 end
 
