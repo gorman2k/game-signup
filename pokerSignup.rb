@@ -36,7 +36,6 @@ end
 helpers do
   def logged_in?
     if session[:user]
-      puts "*** " + session[:user]
       true
     else
       false
@@ -346,6 +345,7 @@ end
 post "/signout" do
   session.clear
   flash[:success] = "You have logged out successfully"
+  redirect "/"
 end
 
 get "/signup" do

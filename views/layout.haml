@@ -30,7 +30,8 @@
               - if session[:user]
                 - if !"#{@user.firstName}".empty? and !"#{@user.lastName}".empty?
                   %span{:class => "hellotext"}Hello, #{@user.firstName} #{@user.lastName}
-                %a{:class => "btn btn-inverse", :id => "signout"}Logout
+                  %form{:class => "logoutForm", :action => "/signout", :method => "post"}
+                    %button{:type => "submit", :class => "btn btn-inverse"}Logout
     = yield
     %script(src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js")
     %script(src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js")

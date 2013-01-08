@@ -1,16 +1,3 @@
-$(document).ready(function(){
-    $('#signout').bind('click', function () {
-        var signout = $.ajax({
-            url:'/signout',
-            type:'post'
-        });
-
-        signout.success(function () {
-            window.location = '/'
-        });
-    })
-});
-
 $(document).ajaxComplete(function(event, request) {
     var type = request.getResponseHeader('X-Message-Type');
     var msg = request.getResponseHeader('X-Message');
