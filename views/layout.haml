@@ -6,6 +6,12 @@
     %link(rel="stylesheet" href="http://code.jquery.com/ui/1.9.2/themes/smoothness/jquery-ui.css")
     %link(rel="stylesheet" href="/css/jquery-ui-timepicker-addon.min.css")
     %link(rel="stylesheet" href="/css/pokerSignup.min.css")
+    %script(src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js")
+    %script(src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js")
+    %script(src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.3/underscore-min.js")
+    %script(type="text/javascript" src="/js/jquery-ui-timepicker-addon.min.js")
+    %script(src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js")
+    %script(type="text/javascript" src="/js/pokerSignup.min.js")
 
     %meta(name="viewport" content="width=device-width, initial-scale=1.0")
   %body
@@ -29,12 +35,6 @@
               - if session[:user]
                 - if !"#{@user.firstName}".empty? and !"#{@user.lastName}".empty?
                   %span{:class => "hellotext"}Hello, #{@user.firstName} #{@user.lastName}
-                %form{:class => "logoutForm", :action => "/signout", :method => "post"}
+                %form{:class => "inline-form", :action => "/signout", :method => "post"}
                   %button{:type => "submit", :class => "btn btn-inverse"}Logout
     = yield
-    %script(src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js")
-    %script(src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js")
-    %script(src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.3/underscore-min.js")
-    %script(type="text/javascript" src="/js/jquery-ui-timepicker-addon.min.js")
-    %script(src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js")
-    %script(type="text/javascript" src="/js/pokerSignup.min.js")

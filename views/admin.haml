@@ -1,31 +1,51 @@
 %div{:class => "well span10 offset1"}
   %h2 Admin
+  %h3 Create a new game
   %form{ :action => "/game", :method => "post" }
     %input{:type => "hidden", :name => "_method", :value => "post"}
     %input{:type => "text", :value => "Max Players", :name => "maxPlayers", :onblur => "if (this.value == '') {this.value = 'Max Players';}",  :onfocus => "if (this.value == 'Max Players') {this.value = '10';}"}
     %br
     %input{:type => "text", :value => "Min Players", :name => "minPlayers", :onblur => "if (this.value == '') {this.value = 'Min Players';}",  :onfocus => "if (this.value == 'Min Players') {this.value = '6';}"}
     %br
-    %br
     %input{:type => "text", :id => "datepicker", :name => "gameTime"}
     %br
-    %br
-    %input{:type => "submit", :value => "Create Game", :class => "button"}
+    %input{:type => "submit", :value => "Create Game", :class => "btn"}
 
-    %h3 Upcoming Games
-    %ul
-      - @gameEmailHash.keys.each do |date|
-        %li
-          %b #{date.strftime("%A, %B %e %Y, %l:%M %p")}
-          - @gameEmailHash[date].each do |email|
-            #{email},
+  %h3 Upcoming Games
+  %ul
+    - @gameEmailHash.keys.each do |date|
+      %li
+        %b #{date.strftime("%A, %B %e %Y, %l:%M %p")}
+        - @gameEmailHash[date].each do |email|
+          #{email},
 
-    %h3 Last Login Times
-    %ul
-      - @lastUsers.each do |user|
-        %li
-          - if "#{user.lastLoginTime}".empty?
-            %small Never logged in
-          - else
-            %b #{user.lastLoginTime.strftime("%A, %B %e %Y, %l:%M %p")}
-          #{user.email}
+  %h3 Last Login Times
+  %ul
+    - @lastUsers.each do |user|
+      %li
+        - if "#{user.lastLoginTime}".empty?
+          %small Never logged in
+        - else
+          %b #{user.lastLoginTime.strftime("%A, %B %e %Y, %l:%M %p")}
+        #{user.email}
+
+  %h3 All Games
+  %ul
+    - @allGames.each do |game|
+      %li
+        %a(href='/game/#{game.id}')#{game.date.strftime("%A, %B %e, %Y, %l:%M %p")}
+        %form{:class => "inline-form", :action => "/game/#{game.id}", :method => "post"}
+          %input{:type => "hidden", :name => "_method", :value => "delete"}
+          %button{:type => "submit", :class => "btn btn-mini btn-danger"}Remove game
+:javascript
+  $(function () {
+      $('#datepicker').datetimepicker({
+          dateFormat: 'yy-mm-dd',
+          hour: 19,
+          minute: 30,
+          showOn: "button",
+          buttonImage: "images/calendar.gif",
+          buttonImageOnly: true
+      });
+  });
+

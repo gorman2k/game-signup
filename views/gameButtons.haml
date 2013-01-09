@@ -1,0 +1,10 @@
+- if @userOnList
+  %button{:class => "btn btn-primary btn-large disabled", :id => "signup", :disabled => "disabled"}Sign up to play!
+  %br
+  %br
+  %a{:class => "btn btn-danger", :id => "remove"}Remove me from the game
+- else
+  %a{class:"btn btn-primary btn-large", :id => "signup"}Sign up to play!
+  %br
+  %br
+  %button{:class => "btn btn-danger disabled", :id => "remove", :disabled => "disabled"}Remove me from the game

@@ -8,7 +8,31 @@
   %div{:id => "waitingList"}
     = haml :waitingList
   %br
-  %a{:class => "btn btn-primary btn-large", :id => "signup", :link => "/game/#{params[:id]}"}Sign up to play!
-  %br
-  %br
-  %a{:class => "btn btn-danger", :id => "remove", :link => "/game/#{params[:id]}"}Remove me from the game
+  %div{:id => "gameButtons"}
+    = haml :gameButtons
+:javascript
+  $('#signup').live('click', function () {
+      var signup = $.ajax({
+          url: '/game/#{params[:id]}/user/#{session[:user]}',
+          type:'put'
+      });
+
+      signup.success(function () {
+          $('#playerList').load('/game/#{params[:id]}/playerList');
+          $('#waitingList').load('/game/#{params[:id]}/waitingList');
+          $('#gameButtons').load('/game/#{params[:id]}/gameButtons');
+      })
+  });
+
+  $('#remove').live('click', function () {
+      var remove = $.ajax({
+          url: '/game/#{params[:id]}/user/#{session[:user]}',
+          type:'delete'
+      });
+
+      remove.success(function () {
+          $('#playerList').load('/game/#{params[:id]}/playerList');
+          $('#waitingList').load('/game/#{params[:id]}/waitingList');
+          $('#gameButtons').load('/game/#{params[:id]}/gameButtons');
+      })
+  });

@@ -60,22 +60,18 @@ helpers do
     @auth.provided? && @auth.basic? && @auth.credentials && @auth.credentials == [ENV['adminUser'], ENV['adminPassword']]
   end
 
-  def get_player_list(id)
-    @game = Game.find(id)
-
+  def get_player_list(game)
     @players = Hash.new
-    @game.playerIds.each do |playerId, signupTime|
+    game.playerIds.each do |playerId, signupTime|
       @players[User.find(playerId)] = signupTime
     end
     @players = @players.sort_by { |player, signupTime| signupTime }
     return @players
   end
 
-  def get_waiting_list(id)
-    @game = Game.find(id)
-
+  def get_waiting_list(game)
     @waitingListPlayers = Hash.new
-    @game.waitingListIds.each do |playerId, signupTime|
+    game.waitingListIds.each do |playerId, signupTime|
       @waitingListPlayers[User.find(playerId)] = signupTime
     end
     @waitingListPlayers = @waitingListPlayers.sort_by { |player, signupTime| signupTime }
@@ -182,34 +178,47 @@ end
 
 get "/game/:id/playerList" do
   if logged_in?
-    get_player_list("#{params[:id]}")
+    @game = Game.find("#{params[:id]}")
+    get_player_list(@game)
     haml :playerList, :layout => false
   end
 end
 
 get "/game/:id/waitingList" do
   if logged_in?
-    get_waiting_list("#{params[:id]}")
+    @game = Game.find("#{params[:id]}")
+    get_waiting_list(@game)
     haml :waitingList, :layout => false
+  end
+end
+
+get "/game/:id/gameButtons" do
+  if logged_in?
+    @game = Game.find("#{params[:id]}")
+    @userOnList = (@game.playerIds.keys.include? "#{session[:user]}") || (@game.waitingListIds.keys.include? "#{session[:user]}")
+    haml :gameButtons, :layout => false
   end
 end
 
 get "/game/:id" do
   if logged_in?
     @user = User.where(:id => session[:user]).first
+    @game = Game.find("#{params[:id]}")
 
-    get_player_list("#{params[:id]}")
-    get_waiting_list("#{params[:id]}")
+    get_player_list(@game)
+    get_waiting_list(@game)
 
+    # figure out if the current logged in user is in the game so buttons can be disabled in the view
+    @userOnList = (@game.playerIds.keys.include? "#{session[:user]}") || (@game.waitingListIds.keys.include? "#{session[:user]}")
     haml :game
   else
     haml :login
   end
 end
 
-put "/game/:id" do
+put "/game/:gameId/user/:userId" do
   if logged_in?
-    game = Game.find("#{params[:id]}")
+    game = Game.find("#{params[:gameId]}")
 
     # don't allow modifications to games in the past
     if game.date < Time.now
@@ -217,16 +226,16 @@ put "/game/:id" do
     else
 
       # if the game isn't full, add the player
-      if game.playerIds.length < game.maxPlayers and !game.playerIds.keys.include? "#{session[:user]}"
-        game.set("playerIds.#{session[:user]}", Time.now)
+      if game.playerIds.length < game.maxPlayers and !game.playerIds.keys.include? "#{params[:userId]}"
+        game.set("playerIds.#{params[:userId]}", Time.now)
       end
 
-      game = Game.find("#{params[:id]}")
+      game = Game.find("#{params[:gameId]}")
 
       # make sure they're not already in the game
       # otherwise add them to the waiting list
-      if !game.playerIds.keys.include? "#{session[:user]}" and !game.waitingListIds.keys.include? "#{session[:user]}"
-        game.set("waitingListIds.#{session[:user]}", Time.now)
+      if !game.playerIds.keys.include? "#{params[:userId]}" and !game.waitingListIds.keys.include? "#{params[:userId]}"
+        game.set("waitingListIds.#{params[:userId]}", Time.now)
         flash[:info] = "The game is full but you will be added to the waiting list"
       end
     end
@@ -235,20 +244,20 @@ put "/game/:id" do
   end
 end
 
-delete "/game/:id" do
+delete "/game/:gameId/user/:userId" do
   if logged_in?
-    game = Game.find("#{params[:id]}")
+    game = Game.find("#{params[:gameId]}")
 
     if (game.date < Time.now)
       flash[:error] = "Modifications to past games are not allowed"
     else
 
       # remove the userid from both the game and wait lists to be safe
-      game.unset("waitingListIds.#{session[:user]}")
-      game.unset("playerIds.#{session[:user]}")
+      game.unset("waitingListIds.#{params[:userId]}")
+      game.unset("playerIds.#{params[:userId]}")
 
       # refresh game object
-      game = Game.find("#{params[:id]}")
+      game = Game.find("#{params[:gameId]}")
 
       # see if there's a waiting list so they can be added to the game
       if !game.waitingListIds.empty? and (game.playerIds.length < game.maxPlayers)
@@ -263,21 +272,6 @@ delete "/game/:id" do
       end
     end
 
-  else
-    haml :login
-  end
-end
-
-post "/game" do
-  if logged_in?
-    game = Game.create({
-            :date => Time.parse(params[:gameTime]),
-            :maxPlayers => params[:maxPlayers],
-            :minPlayers => params[:minPlayers]
-    })
-
-    game.save
-    redirect "/"
   else
     haml :login
   end
@@ -309,11 +303,35 @@ get "/admin" do
     end
 
     # last few logins
-    @lastUsers = User.desc(:lastLoginTime).limit(10)
+    @lastUsers = User.desc(:lastLoginTime).limit(15)
+
+    # All games
+    @allGames = Game.all.desc(:date)
 
     haml :admin
   else
     haml :login
+  end
+end
+
+post "/game" do
+  if logged_in?
+    game = Game.create({
+      :date => Time.parse(params[:gameTime]),
+      :maxPlayers => params[:maxPlayers],
+      :minPlayers => params[:minPlayers]
+    })
+
+    game.save
+    redirect "/"
+  end
+end
+
+delete "/game/:id" do
+  if logged_in?
+    game = Game.find("#{params[:id]}")
+    game.delete
+    redirect "/admin"
   end
 end
 
