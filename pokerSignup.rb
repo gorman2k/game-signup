@@ -339,7 +339,7 @@ post "/user/authenticate" do
   @user = User.where(:email => params[:email].downcase).first
 
   if @user.nil?
-    flash[:error] = "User doesn't exist"
+    flash[:error] = "User doesn't exist!"
     redirect "/"
   end
 
